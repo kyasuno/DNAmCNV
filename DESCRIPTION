@@ -27,7 +27,8 @@ Imports:
 	scales,
 	RColorBrewer,
 	wesanderson,
-	copynumber
+	copynumber,
+	parallel
 Depends: 
     R (>= 4.3.0)
 LazyData: true

@@ -4,18 +4,28 @@
 \alias{make_pon}
 \title{Make a panel of normals from SigDF data}
 \usage{
-make_pon(sdfs, max.p.missing = 0.01, percentile.var = 1)
+make_pon(
+  sdfs,
+  max.p.missing.sample = 0.2,
+  max.p.missing.probe = 0.01,
+  percentile.var = 1,
+  n.cores = 1L
+)
 }
 \arguments{
 \item{sdfs}{list. A named list of SigDF data.}
 
-\item{max.p.missing}{numeric. Maximum proportion of missing data per probe (default: 0.01).}
+\item{max.p.missing.sample}{numeric. Maximum proportion of missing data per sample (default: 0.2).}
+
+\item{max.p.missing.probe}{numeric. Maximum proportion of missing data per probe (default: 0.01).}
 
 \item{percentile.var}{numeric. Remove top \code{percentile.var} percentile of highest variance (default: 1 percentile).}
+
+\item{n.cores}{integer. Number of cores to be used to process data.}
 }
 \value{
-list. probeCoords, GenomicRanges object for probe coordinates. data, total intensities that
-were divided by sample median and log2 transformed
+list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.
+data, total intensities that were divided by sample median and log2 transformed.
 }
 \description{
 Make a panel of normals from SigDF data

@@ -67,7 +67,8 @@ make_pon <- function(sdfs, platform, max.p.missing.sample=0.2, max.p.missing.pro
   # Divide MU by sample median and then log2 transform using safeLog2
   sample.med <- colMedians(MU)
   MU <- t(t(MU)/sample.med)
-  log2epsilon <- log2(1e-9)
+  epsilon <- 1e-9
+  log2epsilon <- log2(epsilon)
   MU <- apply(MU, 2, function(x) dplyr::if_else(x < epsilon, log2epsilon, log2(x), missing=NA_real_))
 
   message("Building a panel of normals is completed with ", nrow(MU), " probes and ", ncol(MU), " samples.")

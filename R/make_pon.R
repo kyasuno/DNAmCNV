@@ -1,6 +1,7 @@
 #' Make a panel of normals from SigDF data
 #'
 #' @param sdfs list. A named list of SigDF data.
+#' @param platform character. HM450, EPIC, or EPICv2.
 #' @param max.p.missing.sample numeric. Maximum proportion of missing data per sample (default: 0.2).
 #' @param max.p.missing.probe numeric. Maximum proportion of missing data per probe (default: 0.01).
 #' @param percentile.var numeric. Remove top `percentile.var` percentile of highest variance (default: 1 percentile).
@@ -9,7 +10,7 @@
 #' data, a matrix of total intensities that were divided by sample median and log2 transformed.
 #' @export
 #'
-make_pon <- function(sdfs, max.p.missing.sample=0.2, max.p.missing.probe=0.01, percentile.var=1, n.cores=1L) {
+make_pon <- function(sdfs, platform, max.p.missing.sample=0.2, max.p.missing.probe=0.01, percentile.var=1, n.cores=1L) {
   # Note: 0-based coordinates
   genome <- sesameData::sesameData_check_genome(NULL, platform)
   probeCoords <- sesameData::sesameData_getManifestGRanges(platform, genome = genome)

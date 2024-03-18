@@ -6,6 +6,7 @@
 \usage{
 make_pon(
   sdfs,
+  platform,
   max.p.missing.sample = 0.2,
   max.p.missing.probe = 0.01,
   percentile.var = 1,
@@ -14,6 +15,8 @@ make_pon(
 }
 \arguments{
 \item{sdfs}{list. A named list of SigDF data.}
+
+\item{platform}{character. HM450, EPIC, or EPICv2.}
 
 \item{max.p.missing.sample}{numeric. Maximum proportion of missing data per sample (default: 0.2).}
 

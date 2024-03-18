@@ -6,7 +6,7 @@
 #' @param percentile.var numeric. Remove top `percentile.var` percentile of highest variance (default: 1 percentile).
 #' @param n.cores integer. Number of cores to be used to process data.
 #' @returns list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.
-#' data, total intensities that were divided by sample median and log2 transformed.
+#' data, a matrix of total intensities that were divided by sample median and log2 transformed.
 #' @export
 #'
 make_pon <- function(sdfs, max.p.missing.sample=0.2, max.p.missing.probe=0.01, percentile.var=1, n.cores=1L) {
@@ -19,14 +19,16 @@ make_pon <- function(sdfs, max.p.missing.sample=0.2, max.p.missing.probe=0.01, p
       seqnames=c("chrX", "chrX"),
       IRanges::IRanges(start=c(10001, 155701383)-1, end=c(2781479, 156030895))
     )
+    probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, parx)]
   }
-  probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, parx)]
+
   # remove probes on chrY and chrM
   remove <- seqnames(probeCoords) %in% c("chrY", "chrM")
   probeCoords <- probeCoords[!remove]
 
   # infer sex
   pred.sex <- parallel::mclapply(sdfs, function(sdf) sesame::inferSex(sdf), mc.cores=n.cores) |> unlist()
+
   # calculate M+U
   MU <- parallel::mclapply(sdfs, function(sdf) {
     mu <- sesame::totalIntensities(sdf, mask=FALSE)
@@ -66,7 +68,9 @@ make_pon <- function(sdfs, max.p.missing.sample=0.2, max.p.missing.probe=0.01, p
   MU <- t(t(MU)/sample.med)
   log2epsilon <- log2(1e-9)
   MU <- apply(MU, 2, function(x) dplyr::if_else(x < epsilon, log2epsilon, log2(x), missing=NA_real_))
-  message("Building a panel of normals is completed.")
+
+  message("Building a panel of normals is completed with ", nrow(MU), " probes and ", ncol(MU), " samples.")
+
   return(
     list(probeCoords=probeCoords, pred.sex=pred.sex, data=MU)
   )

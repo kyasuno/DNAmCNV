@@ -25,7 +25,7 @@ make_pon(
 }
 \value{
 list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.
-data, total intensities that were divided by sample median and log2 transformed.
+data, a matrix of total intensities that were divided by sample median and log2 transformed.
 }
 \description{
 Make a panel of normals from SigDF data

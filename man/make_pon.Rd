@@ -6,11 +6,11 @@
 \usage{
 make_pon(
   sdfs,
-  platform,
+  platform = c("HM450", "EPIC", "EPICv2"),
   max.p.missing.sample = 0.2,
-  max.p.missing.probe = 0.01,
   percentile.var = 1,
-  n.cores = 1L
+  n.cores = 1L,
+  median.normalize = TRUE
 )
 }
 \arguments{
@@ -20,11 +20,11 @@ make_pon(
 
 \item{max.p.missing.sample}{numeric. Maximum proportion of missing data per sample (default: 0.2).}
 
-\item{max.p.missing.probe}{numeric. Maximum proportion of missing data per probe (default: 0.01).}
-
 \item{percentile.var}{numeric. Remove top \code{percentile.var} percentile of highest variance (default: 1 percentile).}
 
 \item{n.cores}{integer. Number of cores to be used to process data.}
+
+\item{median.normalize}{logical. If TRUE, divide the intensity by their median (default: TRUE).}
 }
 \value{
 list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.

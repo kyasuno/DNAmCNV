@@ -1,6 +1,6 @@
 Package: DNAmCNV
 Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Katsuhito", "Yasuno", , "katsuhito.yasuno@yale.edu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-3606-532X"))
@@ -19,6 +19,7 @@ Imports:
 	lubridate,
 	tidyr,
 	purrr,
+	S4Vectors,
 	IRanges,
 	GenomicRanges,
 	GenomeInfoDb,
@@ -28,7 +29,8 @@ Imports:
 	RColorBrewer,
 	wesanderson,
 	copynumber,
-	parallel
+	parallel,
+	matrixStats
 Depends: 
     R (>= 4.3.0)
 LazyData: true

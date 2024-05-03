@@ -1,7 +1,8 @@
 #' @title Plot copy ratio data
 #'
-#' @param segs segment data (seqnames, start, end, mean.lrr, Z.lrr)
+#' @param segs segment data (seqnames, start, end, mean.lrr, Z.lrr).
 #' @param crs denoised copy ratio data (seqnames, start, end, lrr).
+#' @param smoothed.segs smoothed segments.
 #' @param hg38.seqinfo Use `data("hg38.seqinfo")`.
 #' @param centromere.hg38 Use `data("centromere.hg38")`.
 #' @param ymax Maximum copy ratio (default: 3).
@@ -12,7 +13,8 @@
 #' @import ggplot2
 #' @export
 #'
-plot_copyRatio <- function(segs, crs=NULL, hg38.seqinfo, centromere.hg38, ymax=1, space.skip=0.01, loss.lrr=NULL, gain.lrr=NULL) {
+plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
+                           hg38.seqinfo, centromere.hg38, ymax=1, space.skip=0.01, loss.lrr=NULL, gain.lrr=NULL) {
 
   cols <- RColorBrewer::brewer.pal(8,"Dark2")
   col.p <- RColorBrewer::brewer.pal(8,"Paired")
@@ -62,12 +64,12 @@ plot_copyRatio <- function(segs, crs=NULL, hg38.seqinfo, centromere.hg38, ymax=1
       geom_rect(
         data=segs |> filter(mean.lrr <= gain.lrr & mean.lrr >= loss.lrr),
         aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
-        colour="#A6761D", fill="#A6761D", na.rm=TRUE, inherit.aes=FALSE
+        colour="#E6AB02", fill="#E6AB02", na.rm=TRUE, inherit.aes=FALSE
       ) +
       geom_rect(
         data=segs |> filter(mean.lrr > gain.lrr | mean.lrr < loss.lrr),
         aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
-        colour="#000000", fill="#000000", na.rm=TRUE, inherit.aes=FALSE
+        colour="#A6761D", fill="#A6761D", na.rm=TRUE, inherit.aes=FALSE
       )
   } else {
     p <- p +
@@ -75,9 +77,30 @@ plot_copyRatio <- function(segs, crs=NULL, hg38.seqinfo, centromere.hg38, ymax=1
       geom_rect(
         data=segs,
         aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
-        colour="#A6761D", fill="#A6761D", na.rm=TRUE, inherit.aes=FALSE
+        colour="#E6AB02", fill="#E6AB02", na.rm=TRUE, inherit.aes=FALSE
       )
   }
+
+  if (!is.null(smoothed.segs)) {
+    smoothed.segs <- smoothed.segs |> dplyr::filter(seqnames %in% GenomeInfoDb::seqlevels(hg38.seqinfo))
+    smoothed.segs.genome <- get_genomic_coord(smoothed.segs, hg38.seqinfo, space.skip=space.skip)
+    smoothed.segs <- smoothed.segs.genome$data |>
+      dplyr::mutate(
+        lrr=dplyr::if_else(mean.lrr > ymax, ymax - thickness,
+                           dplyr::if_else(mean.lrr < - ymax, -ymax + thickness, mean.lrr))
+      )
+    p <- p + geom_rect(
+      data=smoothed.segs |> dplyr::filter(CN == "CN"),
+      aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
+      colour="#CCCCCC", fill="#CCCCCC", na.rm=TRUE, inherit.aes=FALSE
+    ) +
+      geom_rect(
+        data=smoothed.segs |> dplyr::filter(CN != "CN"),
+        aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
+        colour="#000000", fill="#000000", na.rm=TRUE, inherit.aes=FALSE
+      )
+  }
+
   p <- p +
     scale_y_continuous(limits=c(-ymax,ymax), breaks=scales::breaks_pretty(n=7), expand=c(0,0)) +
     labs(y="R", x="")

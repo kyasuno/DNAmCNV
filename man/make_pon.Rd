@@ -7,16 +7,21 @@
 make_pon(
   sdfs,
   platform = c("HM450", "EPIC", "EPICv2"),
+  use.mask = TRUE,
   max.p.missing.sample = 0.2,
   percentile.var = 1,
   n.cores = 1L,
-  median.normalize = TRUE
+  median.normalize = TRUE,
+  exclude.acen = FALSE,
+  exclude.regions = NULL
 )
 }
 \arguments{
 \item{sdfs}{list. A named list of SigDF data.}
 
 \item{platform}{character. HM450, EPIC, or EPICv2.}
+
+\item{use.mask}{logical. Use SeSAMe mask to filter signals (default: TRUE).}
 
 \item{max.p.missing.sample}{numeric. Maximum proportion of missing data per sample (default: 0.2).}
 
@@ -25,6 +30,11 @@ make_pon(
 \item{n.cores}{integer. Number of cores to be used to process data.}
 
 \item{median.normalize}{logical. If TRUE, divide the intensity by their median (default: TRUE).}
+
+\item{exclude.acen}{logical. If TRUE, probes within gieStain = "acen" will be removed (default: FALSE).}
+
+\item{exclude.regions}{GenomicRanges object. Regions to be removed from the analysis (default: NULL).
+A predefined set is available: data(exclude_regions.hg38).}
 }
 \value{
 list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.

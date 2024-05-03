@@ -2,54 +2,32 @@
 #'
 #' @param sdfs list. A named list of SigDF data.
 #' @param platform character. HM450, EPIC, or EPICv2.
+#' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
 #' @param max.p.missing.sample numeric. Maximum proportion of missing data per sample (default: 0.2).
 #' @param percentile.var numeric. Remove top `percentile.var` percentile of highest variance (default: 1 percentile).
 #' @param n.cores integer. Number of cores to be used to process data.
 #' @param median.normalize logical. If TRUE, divide the intensity by their median (default: TRUE).
+#' @param exclude.acen logical. If TRUE, probes within gieStain = "acen" will be removed (default: FALSE).
+#' @param exclude.regions GenomicRanges object. Regions to be removed from the analysis (default: NULL).
+#' A predefined set is available: data(exclude_regions.hg38).
 #' @returns list. probeCoords, GenomicRanges object for probe coordinates. pred.sex, predicted sex.
 #' data, a matrix of total intensities that were divided by sample median and log2 transformed.
 #' @export
 #'
 make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
-                     max.p.missing.sample=0.2, percentile.var=1, n.cores=1L, median.normalize=TRUE) {
+                     use.mask=TRUE,
+                     max.p.missing.sample=0.2, percentile.var=1, n.cores=1L, median.normalize=TRUE,
+                     exclude.acen=FALSE, exclude.regions=NULL) {
   platform <- match.arg(platform)
   # Note: 0-based coordinates
   genome <- sesameData::sesameData_check_genome(NULL, platform)
   genomeInfo <- sesameData::sesameData_getGenomeInfo(genome)
 
   # process cytoband information and remove p arms of acrocentric chromosomes
-  cytoBand <- genomeInfo$cytoBand |>
-    tibble::as_tibble() |>
-    dplyr::filter(chrom %in% paste0("chr", c(1:22, "X"))) |>
-    dplyr::mutate(
-      chrom=as.character(chrom) |> factor(levels=paste0("chr", c(1:22, "X")))
-    ) |>
-    dplyr::mutate(
-      arm=dplyr::if_else(grepl("^p", name), "p", "q")
-    ) |>
-    dplyr::group_by(chrom, arm) |>
-    dplyr::summarise(
-      start=min(chromStart),
-      end=max(chromEnd),
-      .groups="drop"
-    ) |>
-    dplyr::mutate(
-      chrArm=paste0(chrom, arm)
-    ) |>
-    dplyr::filter(!chrArm %in% paste0("chr", c(13,14,15,21,22), "p"))
-  arms <- cytoBand$chrArm
-  cytoBand <- cytoBand |>
-    dplyr::mutate(
-      chrArm=factor(chrArm, levels=arms)
-    )
-  cyto.gr <- GenomicRanges::GRanges(
-    seqnames=cytoBand$chrom,
-    IRanges::IRanges(start=cytoBand$start, end=cytoBand$end),
-    chrArm=cytoBand$chrArm
-  )
+  data(chrom_arm.hg38)
 
   probeCoords <- sesameData::sesameData_getManifestGRanges(platform, genome = genome)
-  x <- IRanges::mergeByOverlaps(probeCoords, cyto.gr)
+  x <- IRanges::mergeByOverlaps(probeCoords, chrom_arm.hg38)
   probeCoords <- x[["probeCoords"]]
   probeCoords$chrArm <- x[["chrArm"]]
   rm(x)
@@ -71,9 +49,22 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
   remove <- as.character(GenomeInfoDb::seqnames(probeCoords)) %in% c("chrY", "chrM")
   probeCoords <- probeCoords[!remove]
 
-  # keep only CpG probes
-  message("Keep only CpG and Ch probes")
-  keep <- grepl("^cg|^ch", names(probeCoords))
+  # remove probes in gieStain = "acen"
+  if (exclude.acen) {
+    data(acen.hg38)
+    message("Removing probes in gieStain = acen")
+    probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, acen.hg38)]
+
+  }
+  # remove probes in exclude.region
+  if (!is.null(exclude.regions)) {
+    message("Removing probes in exclue.regions")
+    probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, exclude.regions)]
+  }
+
+  # keep only CpG probes (as in conumee)
+  message("Keep only CpG probes")
+  keep <- grepl("^cg", names(probeCoords))
   probeCoords <- probeCoords[keep]
 
   # infer sex
@@ -83,7 +74,9 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
   # calculate M+U
   MU <- parallel::mclapply(sdfs, function(sdf) {
     mu <- sesame::totalIntensities(sdf, mask=FALSE)
-    mu[sdf$mask] <- NA_real_
+    if (use.mask) {
+      mu[sdf$mask] <- NA_real_
+    }
     mu
   }, mc.cores=n.cores)
   MU <- do.call(cbind, MU)
@@ -109,7 +102,8 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
 
   # remove probes in the top k percentile of highest variance
   W <- matrixStats::rowVars(log2(MU), na.rm=TRUE)
-  keep <- W < quantile(W, probs=(100 - percentile.var)/100)
+  keep <- W <= quantile(W, probs=(100 - percentile.var)/100)
+
   message("Removing ", sum(!keep), " highly variable probes with top ", percentile.var, " percentile of its variance")
   probeCoords <- probeCoords[keep]
   MU <- MU[keep, , drop=FALSE]

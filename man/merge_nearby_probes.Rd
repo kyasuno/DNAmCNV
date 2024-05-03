@@ -15,7 +15,7 @@ merge_nearby_probes(crs, min.gapwidth, max.probes, n.cores = 1L)
 \code{ceiling(k/max.probes)} groups, where k is the number of probes in the group.}
 }
 \value{
-list. probeCoords, merged probe coordinates. lrr, log R ratio (median). shift, shift factor of the baseline signal.
+tbl. seqnames, start, end, width, nProbes, chrArm and median log R ratio (lrr).
 }
 \description{
 Merge nearby probes

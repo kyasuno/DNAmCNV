@@ -2,20 +2,23 @@
 #'
 #' @param probeData tbl. seqnames (chromosomes chr1, ..., chrX), start, end, chrArm (chr1p, ..., chrXq), lrr (log R ratio).
 #' @param denoise.method character. winsorize or rmf (recursive median filter).
-#' @param kmin integer. minimum number of probes in each segment used by copynumber::pcf (default: 5).
+#' @param kmin integer. minimum number of probes (or bins) in each segment used by copynumber::pcf (default: 5).
 #' @param gamma numeric. A penalty parameter used by copynumber::pcf for each discontinuity in the curve (default: 40).
 #' @param normalize logical. Whether the copy number measurements should be scaled by the sample residual standard error (default: TRUE).
 #' When denoise.method = "winsorize", normalize = TRUE is recommended while when denoise.method = "rmf", normalize = FALSE is recommended.
 #' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize or denoise_intensities.
 #' @param adjust.baseline logical. Shift factor is calculated using limma::weighted.median of lrr among potentially
 #' copy neutral segments (abs(lrr) < 0.1) (default: FALSE).
-#' @param n.cores integer. number of cores to be used (default: 1).
+#' @param use.n.probes logical. If TRUE, the number of probes (bins) will be used as weights in the baseline adjusment.
+#' If FALSE, the physical length of segments will be used as weights. (Default: TRUE)
+#' @param n.cores integer. number of cores to be used (default: 1), n.cores > 1 is effective only for \code{denoise.method = "rmv"}.
 #' @param verbose logical.
 #' @returns list.
 #' @export
 #'
 run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
                              kmin=5, gamma=40, normalize=TRUE, k=25, adjust.baseline=FALSE,
+                             use.n.probes=TRUE,
                              n.cores=1L, verbose=FALSE) {
   denoise.method <- match.arg(denoise.method)
   probeData <- probeData |>
@@ -34,11 +37,15 @@ run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
     )$lrr
 
   } else if (denoise.method == "rmf") {
-    probeData$lrr.denoised <- denoise_intensities(probeData$lrr, probeData$chrArm, k=k, n.cores=n.cores, verbose=FALSE)
+    probeData$lrr.denoised <- denoise_intensities(
+      probeData$lrr, probeData$chrArm, k=k, n.cores=n.cores, verbose=FALSE
+    )
   }
 
   # pcf
-  segs <- copynumber::pcf(data=probeData |> dplyr::select(chrom, position, lrr.denoised) |> as.data.frame(),
+  segs <- copynumber::pcf(data=probeData |>
+                            dplyr::select(chrom, position, lrr.denoised) |>
+                            as.data.frame(),
                           arms=probeData$arms, assembly="hg38", digits=6,
                           normalize=normalize, kmin=kmin, gamma=gamma, verbose=FALSE) |>
     tibble::as_tibble() |>
@@ -57,12 +64,17 @@ run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
   }
   segs <- segs |>
     dplyr::mutate(sizeMb=as.numeric(end - start + 1) / 1e6) |>
-    dplyr::select(seqnames, arm, start, end, sizeMb, n.probes, mean)
+    dplyr::select(seqnames, arm, start, end, sizeMb, n.probes, mean) |>
+    dplyr::rename(n.markers=n.probes)
 
   # check any bias in lrr for copy-neutral segment
-  cns <- segs |>
-    dplyr::filter(abs(mean) < 0.1)
-  cns.median <- with(cns, limma::weighted.median(mean, sizeMb))
+  cns <- segs |> dplyr::filter(abs(mean) < 0.1)
+  if (use.n.probes) {
+    cns.median <- with(cns, limma::weighted.median(mean, n.probes))
+  } else {
+    cns.median <- with(cns, limma::weighted.median(mean, sizeMb))
+  }
+
 
   # calculate Z score for lrr
   segs.gr <- GenomicRanges::GRanges(

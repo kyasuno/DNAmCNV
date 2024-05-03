@@ -7,6 +7,7 @@
 plot_copyRatio(
   segs,
   crs = NULL,
+  smoothed.segs = NULL,
   hg38.seqinfo,
   centromere.hg38,
   ymax = 1,
@@ -16,9 +17,11 @@ plot_copyRatio(
 )
 }
 \arguments{
-\item{segs}{segment data (seqnames, start, end, mean.lrr, Z.lrr)}
+\item{segs}{segment data (seqnames, start, end, mean.lrr, Z.lrr).}
 
 \item{crs}{denoised copy ratio data (seqnames, start, end, lrr).}
+
+\item{smoothed.segs}{smoothed segments.}
 
 \item{hg38.seqinfo}{Use \code{data("hg38.seqinfo")}.}
 

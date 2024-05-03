@@ -41,7 +41,7 @@ tangent_normalization <- function(sdf, sex=NULL, pon) {
   # check if target sample is included in PoN
   rr <- cor(mu, pon$data, use="pairwise.complete.obs")[1, ] < 0.99
   if (any(!rr)) {
-    message("target sample seems to also be in the PoN. The corresponding sample is removed from PoN, ",
+    message("target sample seems to be in the PoN. The corresponding sample is removed from PoN, ",
             "resulting in ", sum(rr), " PoN samples.")
     pon$data <- pon$data[, rr, drop=FALSE]
     pon$pred.sex <- pon$pred.sex[rr]
@@ -60,10 +60,10 @@ tangent_normalization <- function(sdf, sex=NULL, pon) {
   lrr <- mu - pred
   names(lrr) <- names(mu)
 
-  shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
-                 method = "Brent", lower = -100, upper = 100)$par
+  # shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
+  #                method = "Brent", lower = -100, upper = 100)$par
 
   return(
-    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr, shift=shift)
+    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr) #, shift=shift)
   )
 }

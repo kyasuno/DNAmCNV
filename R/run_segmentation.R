@@ -70,7 +70,7 @@ run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
   # check any bias in lrr for copy-neutral segment
   cns <- segs |> dplyr::filter(abs(mean) < 0.1)
   if (use.n.probes) {
-    cns.median <- with(cns, limma::weighted.median(mean, n.probes))
+    cns.median <- with(cns, limma::weighted.median(mean, n.markers))
   } else {
     cns.median <- with(cns, limma::weighted.median(mean, sizeMb))
   }

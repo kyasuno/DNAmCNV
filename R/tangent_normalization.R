@@ -3,11 +3,12 @@
 #' @param sdf SigDF object.
 #' @param sex character. Sex of the sample. If NULL, sex is estimated using `sesame::inferSex(sdf)`.
 #' @param pon list. panel of normal data.
+#' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
 #' @returns list. probeCoords, probe coordinates. obs, observed signal (`sesame::totalIntensities(sdf)`). pred, predicted (fitted) signal.
 #' lrr, log R ratio (`obs - pred`). shift, shift factor of the baseline signal.
 #' @export
 #'
-tangent_normalization <- function(sdf, sex=NULL, pon) {
+tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE) {
   # infer sex if not given
   if (is.null(sex)) {
     sex <- sesame::inferSex(sdf)
@@ -19,7 +20,11 @@ tangent_normalization <- function(sdf, sex=NULL, pon) {
   mu <- sesame::totalIntensities(sdf, mask=FALSE)
 
   # extract probes both in sdf and pon
-  keep <- !sdf$mask & !is.na(mu) & (names(mu) %in% pon$probeCoords$Probe_ID)
+  if (use.mask) {
+    keep <- !sdf$mask & !is.na(mu) & (names(mu) %in% pon$probeCoords$Probe_ID)
+  } else {
+    keep <- !is.na(mu) & (names(mu) %in% pon$probeCoords$Probe_ID)
+  }
   mu <- mu[keep]
 
   remove <- !(pon$probeCoords$Probe_ID %in% names(mu))

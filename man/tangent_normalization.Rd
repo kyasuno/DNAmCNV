@@ -4,7 +4,7 @@
 \alias{tangent_normalization}
 \title{Tangent normalization of probe intensities}
 \usage{
-tangent_normalization(sdf, sex = NULL, pon)
+tangent_normalization(sdf, sex = NULL, pon, use.mask = TRUE)
 }
 \arguments{
 \item{sdf}{SigDF object.}
@@ -12,6 +12,8 @@ tangent_normalization(sdf, sex = NULL, pon)
 \item{sex}{character. Sex of the sample. If NULL, sex is estimated using \code{sesame::inferSex(sdf)}.}
 
 \item{pon}{list. panel of normal data.}
+
+\item{use.mask}{logical. Use SeSAMe mask to filter signals (default: TRUE).}
 }
 \value{
 list. probeCoords, probe coordinates. obs, observed signal (\code{sesame::totalIntensities(sdf)}). pred, predicted (fitted) signal.

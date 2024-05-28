@@ -1,13 +1,13 @@
 #' Get probe bins
 #'
 #' @param crs list. Output of `tangent_normalization`.
-#' @param bin.size integer. In base pairs (default: 5000L).
+#' @param bin.size integer. In base pairs (default: 1000L).
 #' @param hg38.seqinfo Use `data("hg38.seqinfo")`.
 #' @param centromere.hg38 Use `data("centromere.hg38")`.
 #' @returns tbl. seqnames, start, end, width, nProbes, chrArm and median log R ratio (lrr).
 #' @export
 #'
-get_probe_bins <- function(crs, bin.size, hg38.seqinfo, centromere.hg38) {
+get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
 
   tiled <- GenomicRanges::tileGenome(hg38.seqinfo,
                           tilewidth = bin.size, cut.last.tile.in.chrom = TRUE)

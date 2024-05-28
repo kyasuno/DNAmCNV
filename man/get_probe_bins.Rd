@@ -4,12 +4,12 @@
 \alias{get_probe_bins}
 \title{Get probe bins}
 \usage{
-get_probe_bins(crs, bin.size, hg38.seqinfo, centromere.hg38)
+get_probe_bins(crs, bin.size = 1000L, hg38.seqinfo, centromere.hg38)
 }
 \arguments{
 \item{crs}{list. Output of \code{tangent_normalization}.}
 
-\item{bin.size}{integer. In base pairs (default: 5000L).}
+\item{bin.size}{integer. In base pairs (default: 1000L).}
 
 \item{hg38.seqinfo}{Use \code{data("hg38.seqinfo")}.}
 

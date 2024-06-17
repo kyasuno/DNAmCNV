@@ -7,6 +7,7 @@
 #' @param normalize logical. Whether the copy number measurements should be scaled by the sample residual standard error (default: TRUE).
 #' When denoise.method = "winsorize", normalize = TRUE is recommended while when denoise.method = "rmf", normalize = FALSE is recommended.
 #' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize or denoise_intensities.
+#' @param tau numeric. Winsorization threshold, default is 1.5.
 #' @param adjust.baseline logical. Shift factor is calculated using limma::weighted.median of lrr among potentially
 #' copy neutral segments (abs(lrr) < 0.1) (default: FALSE).
 #' @param use.n.probes logical. If TRUE, the number of probes (bins) will be used as weights in the baseline adjusment.
@@ -17,7 +18,7 @@
 #' @export
 #'
 run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "rmf"),
-                             kmin=5, gamma=40, normalize=TRUE, k=25, adjust.baseline=FALSE,
+                             kmin=5, gamma=40, normalize=TRUE, k=25, tau=1.5, adjust.baseline=FALSE,
                              use.n.probes=TRUE,
                              n.cores=1L, verbose=FALSE) {
   denoise.method <- match.arg(denoise.method)
@@ -33,7 +34,7 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
   } else if (denoise.method == "winsorize") {
     probeData$lrr.denoised <- copynumber::winsorize(
       data=probeData |> dplyr::select(chrom, position, lrr) |> as.data.frame(),
-      arms=probeData$arms, k=k, tau=1.5, method="mad", assembly="hg38", digits=6,
+      arms=probeData$arms, k=k, tau=tau, method="mad", assembly="hg38", digits=6,
       verbose=FALSE
     )$lrr
   } else if (denoise.method == "rmf") {

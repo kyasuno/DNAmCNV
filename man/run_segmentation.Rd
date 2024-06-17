@@ -11,6 +11,7 @@ run_segmentation(
   gamma = 40,
   normalize = TRUE,
   k = 25,
+  tau = 1.5,
   adjust.baseline = FALSE,
   use.n.probes = TRUE,
   n.cores = 1L,
@@ -30,6 +31,8 @@ run_segmentation(
 When denoise.method = "winsorize", normalize = TRUE is recommended while when denoise.method = "rmf", normalize = FALSE is recommended.}
 
 \item{k}{integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize or denoise_intensities.}
+
+\item{tau}{numeric. Winsorization threshold, default is 1.5.}
 
 \item{adjust.baseline}{logical. Shift factor is calculated using limma::weighted.median of lrr among potentially
 copy neutral segments (abs(lrr) < 0.1) (default: FALSE).}

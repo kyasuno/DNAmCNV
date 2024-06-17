@@ -6,11 +6,12 @@
 #' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
 #' @param winsorize logical. Winsorize after normalization (default: FALSE).
 #' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.
+#' @param tau numeric. Winsorization threshold, default is 1.5.
 #' @returns list. probeCoords, probe coordinates. obs, observed signal (`sesame::totalIntensities(sdf)`). pred, predicted (fitted) signal.
 #' lrr, log R ratio (`obs - pred`). shift, shift factor of the baseline signal.
 #' @export
 #'
-tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE, winsorize=FALSE, k=25) {
+tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE, winsorize=FALSE, k=25, tau=1.5) {
   # infer sex if not given
   if (is.null(sex)) {
     sex <- sesame::inferSex(sdf)
@@ -76,7 +77,7 @@ tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE, winsorize=F
       dplyr::mutate(lrr=lrr)
     lrr <- copynumber::winsorize(
       data=d |> dplyr::select(chrom, position, lrr) |> as.data.frame(),
-      arms=d$arms, k=k, tau=1.5, method="mad", assembly="hg38", digits=6,
+      arms=d$arms, k=k, tau=tau, method="mad", assembly="hg38", digits=6,
       verbose=FALSE
     )$lrr
   }

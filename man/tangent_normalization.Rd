@@ -10,7 +10,8 @@ tangent_normalization(
   pon,
   use.mask = TRUE,
   winsorize = FALSE,
-  k = 25
+  k = 25,
+  tau = 1.5
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ tangent_normalization(
 \item{winsorize}{logical. Winsorize after normalization (default: FALSE).}
 
 \item{k}{integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.}
+
+\item{tau}{numeric. Winsorization threshold, default is 1.5.}
 }
 \value{
 list. probeCoords, probe coordinates. obs, observed signal (\code{sesame::totalIntensities(sdf)}). pred, predicted (fitted) signal.

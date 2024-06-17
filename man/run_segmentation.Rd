@@ -6,7 +6,7 @@
 \usage{
 run_segmentation(
   probeData,
-  denoise.method = c("winsorize", "rmf"),
+  denoise.method = c("none", "winsorize", "rmf"),
   kmin = 5,
   gamma = 40,
   normalize = TRUE,
@@ -20,7 +20,7 @@ run_segmentation(
 \arguments{
 \item{probeData}{tbl. seqnames (chromosomes chr1, ..., chrX), start, end, chrArm (chr1p, ..., chrXq), lrr (log R ratio).}
 
-\item{denoise.method}{character. winsorize or rmf (recursive median filter).}
+\item{denoise.method}{character. none, winsorize or rmf (recursive median filter).}
 
 \item{kmin}{integer. minimum number of probes (or bins) in each segment used by copynumber::pcf (default: 5).}
 

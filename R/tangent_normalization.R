@@ -4,11 +4,13 @@
 #' @param sex character. Sex of the sample. If NULL, sex is estimated using `sesame::inferSex(sdf)`.
 #' @param pon list. panel of normal data.
 #' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
+#' @param winsorize logical. Winsorize after normalization (default: FALSE).
+#' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.
 #' @returns list. probeCoords, probe coordinates. obs, observed signal (`sesame::totalIntensities(sdf)`). pred, predicted (fitted) signal.
 #' lrr, log R ratio (`obs - pred`). shift, shift factor of the baseline signal.
 #' @export
 #'
-tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE) {
+tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE, winsorize=FALSE, k=25) {
   # infer sex if not given
   if (is.null(sex)) {
     sex <- sesame::inferSex(sdf)
@@ -63,6 +65,21 @@ tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE) {
     stop("There could be missing data in PoN.")
   }
   lrr <- mu - pred
+  if (winsorize) {
+    d <- pon$probeCoords |>
+      dplyr::mutate(
+        chrom=sub("chr", "", as.character(seqnames)),
+        arms=dplyr::if_else(grepl("p$", chrArm), "p", "q"),
+        position=end # use end position
+      ) |>
+      dplyr::select(chrom, position, arms) |>
+      dplyr::mutate(lrr=lrr)
+    lrr <- copynumber::winsorize(
+      data=d |> dplyr::select(chrom, position, lrr) |> as.data.frame(),
+      arms=d$arms, k=k, tau=1.5, method="mad", assembly="hg38", digits=6,
+      verbose=FALSE
+    )$lrr
+  }
   names(lrr) <- names(mu)
 
   # shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),

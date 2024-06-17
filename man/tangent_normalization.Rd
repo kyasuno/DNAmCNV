@@ -4,7 +4,14 @@
 \alias{tangent_normalization}
 \title{Tangent normalization of probe intensities}
 \usage{
-tangent_normalization(sdf, sex = NULL, pon, use.mask = TRUE)
+tangent_normalization(
+  sdf,
+  sex = NULL,
+  pon,
+  use.mask = TRUE,
+  winsorize = FALSE,
+  k = 25
+)
 }
 \arguments{
 \item{sdf}{SigDF object.}
@@ -14,6 +21,10 @@ tangent_normalization(sdf, sex = NULL, pon, use.mask = TRUE)
 \item{pon}{list. panel of normal data.}
 
 \item{use.mask}{logical. Use SeSAMe mask to filter signals (default: TRUE).}
+
+\item{winsorize}{logical. Winsorize after normalization (default: FALSE).}
+
+\item{k}{integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.}
 }
 \value{
 list. probeCoords, probe coordinates. obs, observed signal (\code{sesame::totalIntensities(sdf)}). pred, predicted (fitted) signal.

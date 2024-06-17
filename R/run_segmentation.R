@@ -1,7 +1,7 @@
 #' Run segmentation using copynumber
 #'
 #' @param probeData tbl. seqnames (chromosomes chr1, ..., chrX), start, end, chrArm (chr1p, ..., chrXq), lrr (log R ratio).
-#' @param denoise.method character. winsorize or rmf (recursive median filter).
+#' @param denoise.method character. none, winsorize or rmf (recursive median filter).
 #' @param kmin integer. minimum number of probes (or bins) in each segment used by copynumber::pcf (default: 5).
 #' @param gamma numeric. A penalty parameter used by copynumber::pcf for each discontinuity in the curve (default: 40).
 #' @param normalize logical. Whether the copy number measurements should be scaled by the sample residual standard error (default: TRUE).
@@ -16,7 +16,7 @@
 #' @returns list.
 #' @export
 #'
-run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
+run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "rmf"),
                              kmin=5, gamma=40, normalize=TRUE, k=25, adjust.baseline=FALSE,
                              use.n.probes=TRUE,
                              n.cores=1L, verbose=FALSE) {
@@ -28,14 +28,14 @@ run_segmentation <- function(probeData, denoise.method=c("winsorize", "rmf"),
       position=end # use end position
     )
   # denoise signals
-  if (denoise.method == "winsorize") {
-
+  if (denoise.method == "none") {
+    probeData$lrr.denoised <- round(probeData$lrr, digits=6)
+  } else if (denoise.method == "winsorize") {
     probeData$lrr.denoised <- copynumber::winsorize(
       data=probeData |> dplyr::select(chrom, position, lrr) |> as.data.frame(),
       arms=probeData$arms, k=k, tau=1.5, method="mad", assembly="hg38", digits=6,
       verbose=FALSE
     )$lrr
-
   } else if (denoise.method == "rmf") {
     probeData$lrr.denoised <- denoise_intensities(
       probeData$lrr, probeData$chrArm, k=k, n.cores=n.cores, verbose=FALSE

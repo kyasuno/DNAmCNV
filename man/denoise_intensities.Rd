@@ -2,9 +2,9 @@
 % Please edit documentation in R/denoise_intensities.R
 \name{denoise_intensities}
 \alias{denoise_intensities}
-\title{Denoise intensities using median filters recursively}
+\title{Denoise intensities using median filters recursively or non-recursively}
 \usage{
-denoise_intensities(x, chrArm, k, n.cores, verbose = FALSE)
+denoise_intensities(x, chrArm, k, n.cores, recursive = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{x}{numeric vector.}
@@ -13,11 +13,13 @@ denoise_intensities(x, chrArm, k, n.cores, verbose = FALSE)
 
 \item{k}{window size to be used for the sliding window (actually half-window size).}
 
+\item{recursive}{logical. Perform median filters recursively or non-recursively (default: FALSE).}
+
 \item{verbose}{logical.}
 }
 \value{
 numeric vector.
 }
 \description{
-Denoise intensities using median filters recursively
+Denoise intensities using median filters recursively or non-recursively
 }

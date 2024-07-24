@@ -14,6 +14,7 @@ run_segmentation(
   tau = 1.5,
   adjust.baseline = FALSE,
   use.n.probes = TRUE,
+  recursive = FALSE,
   n.cores = 1L,
   verbose = FALSE
 )
@@ -38,7 +39,9 @@ When denoise.method = "winsorize", normalize = TRUE is recommended while when de
 copy neutral segments (abs(lrr) < 0.1) (default: FALSE).}
 
 \item{use.n.probes}{logical. If TRUE, the number of probes (bins) will be used as weights in the baseline adjusment.
-If FALSE, the physical length of segments will be used as weights. (Default: TRUE)}
+If FALSE, the physical length of segments will be used as weights. (Default: TRUE).}
+
+\item{recursive}{logical. Effective only for denoise.method = "rmf". If TRUE, median filtering is applied recursively. Default: FALSE.}
 
 \item{n.cores}{integer. number of cores to be used (default: 1), n.cores > 1 is effective only for \code{denoise.method = "rmv"}.}
 

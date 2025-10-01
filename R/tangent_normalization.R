@@ -1,20 +1,24 @@
 #' Tangent normalization of probe intensities
 #'
 #' @param sdf SigDF object.
-#' @param sex character. Sex of the sample. If NULL, sex is estimated using `sesame::inferSex(sdf)`.
+#' @param platform character. HM450, EPIC, or EPICv2.
+#' @param sex character. Sex of the sample. If NULL, sex is estimated using `get_sex_info`.
+#' @param cutoff a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).
 #' @param pon list. panel of normal data.
 #' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
 #' @param winsorize logical. Winsorize after normalization (default: FALSE).
 #' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.
 #' @param tau numeric. Winsorization threshold, default is 1.5.
-#' @returns list. probeCoords, probe coordinates. obs, observed signal (`sesame::totalIntensities(sdf)`). pred, predicted (fitted) signal.
+#' @returns list. probeCoords, probe coordinates. obs, observed signal (`sesame::totalIntensities(sdf)`).
+#' pred, predicted (fitted) signal.
 #' lrr, log R ratio (`obs - pred`). shift, shift factor of the baseline signal.
 #' @export
 #'
-tangent_normalization <- function(sdf, sex=NULL, pon, use.mask=TRUE, winsorize=FALSE, k=25, tau=1.5) {
+tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE, winsorize=FALSE, k=25, tau=1.5) {
   # infer sex if not given
   if (is.null(sex)) {
-    sex <- sesame::inferSex(sdf)
+    # sex <- sesame::inferSex(sdf)
+    sex <- get_sex_info(sdf, platform, cutoff)$pred.sex
     message("This sample is predicted ", sex)
   } else {
     sex <- toupper(sex)

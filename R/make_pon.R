@@ -2,6 +2,7 @@
 #'
 #' @param sdfs list. A named list of SigDF data.
 #' @param platform character. HM450, EPIC, or EPICv2.
+#' @param cutoff a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).
 #' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
 #' @param max.p.missing.sample numeric. Maximum proportion of missing data per sample (default: 0.2).
 #' @param percentile.var numeric. Remove top `percentile.var` percentile of highest variance (default: 1 percentile).
@@ -14,7 +15,7 @@
 #' data, a matrix of total intensities that were divided by sample median and log2 transformed.
 #' @export
 #'
-make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
+make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"), cutoff=-3.5,
                      use.mask=TRUE,
                      max.p.missing.sample=0.2, percentile.var=1, n.cores=1L, median.normalize=TRUE,
                      exclude.acen=FALSE, exclude.regions=NULL) {
@@ -69,7 +70,9 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"),
 
   # infer sex
   message("Predicting sex of samples")
-  pred.sex <- parallel::mclapply(sdfs, function(sdf) sesame::inferSex(sdf), mc.cores=n.cores) |> unlist()
+  # pred.sex <- parallel::mclapply(sdfs, function(sdf) sesame::inferSex(sdf), mc.cores=n.cores) |> unlist()
+  pred.sex <- parallel::mclapply(sdfs, function(sdf) get_sex_info, platform=platform, cutoff=cutoff,
+                                 mc.cores=n.cores) |> unlist()
 
   # calculate M+U
   MU <- parallel::mclapply(sdfs, function(sdf) {

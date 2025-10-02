@@ -7,6 +7,7 @@
 make_pon(
   sdfs,
   platform = c("HM450", "EPIC", "EPICv2"),
+  cutoff = -3.5,
   use.mask = TRUE,
   max.p.missing.sample = 0.2,
   percentile.var = 1,
@@ -20,6 +21,8 @@ make_pon(
 \item{sdfs}{list. A named list of SigDF data.}
 
 \item{platform}{character. HM450, EPIC, or EPICv2.}
+
+\item{cutoff}{a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).}
 
 \item{use.mask}{logical. Use SeSAMe mask to filter signals (default: TRUE).}
 

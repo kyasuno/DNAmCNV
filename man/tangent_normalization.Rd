@@ -7,6 +7,7 @@
 tangent_normalization(
   sdf,
   sex = NULL,
+  cutoff = -3.5,
   pon,
   use.mask = TRUE,
   winsorize = FALSE,
@@ -17,7 +18,9 @@ tangent_normalization(
 \arguments{
 \item{sdf}{SigDF object.}
 
-\item{sex}{character. Sex of the sample. If NULL, sex is estimated using \code{sesame::inferSex(sdf)}.}
+\item{sex}{character. Sex of the sample. If NULL, sex is estimated using \code{get_sex_info}.}
+
+\item{cutoff}{a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).}
 
 \item{pon}{list. panel of normal data.}
 
@@ -28,9 +31,12 @@ tangent_normalization(
 \item{k}{integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.}
 
 \item{tau}{numeric. Winsorization threshold, default is 1.5.}
+
+\item{platform}{character. HM450, EPIC, or EPICv2.}
 }
 \value{
-list. probeCoords, probe coordinates. obs, observed signal (\code{sesame::totalIntensities(sdf)}). pred, predicted (fitted) signal.
+list. probeCoords, probe coordinates. obs, observed signal (\code{sesame::totalIntensities(sdf)}).
+pred, predicted (fitted) signal.
 lrr, log R ratio (\code{obs - pred}). shift, shift factor of the baseline signal.
 }
 \description{

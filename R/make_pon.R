@@ -72,7 +72,8 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"), cutoff=-3.5,
   message("Predicting sex of samples")
   # pred.sex <- parallel::mclapply(sdfs, function(sdf) sesame::inferSex(sdf), mc.cores=n.cores) |> unlist()
   pred.sex <- parallel::mclapply(sdfs, function(sdf) get_sex_info, platform=platform, cutoff=cutoff,
-                                 mc.cores=n.cores) |> unlist()
+                                 mc.cores=n.cores)
+  pred.sex <- lapply(pred.sex, function(lst) lst$pred.sex) |> unlist()
 
   # calculate M+U
   MU <- parallel::mclapply(sdfs, function(sdf) {

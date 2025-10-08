@@ -30,7 +30,8 @@ plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
   c.genome <- get_genomic_coord(centromere.hg38, hg38.seqinfo, space.skip=space.skip)
   centromere.hg38 <- c.genome$data
 
-  p <- ggplot(inherit.aes=FALSE)
+  #p <- ggplot(inherit.aes=FALSE)
+  p <- ggplot()
   if (!is.null(crs)) {
     crs <- crs |> dplyr::filter(seqnames %in% GenomeInfoDb::seqlevels(hg38.seqinfo))
     crs.genome <- get_genomic_coord(crs, hg38.seqinfo, space.skip=space.skip)

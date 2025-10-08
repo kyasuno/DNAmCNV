@@ -6,6 +6,7 @@
 #' @param cutoff a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).
 #' @param pon list. panel of normal data.
 #' @param use.mask logical. Use SeSAMe mask to filter signals (default: TRUE).
+#' @param match.sex logical. If true, use sex-matched panel for autosomes
 #' @param winsorize logical. Winsorize after normalization (default: FALSE).
 #' @param k integer. window size to be used for the sliding window (actually half-window size) for copynumber::winsorize.
 #' @param tau numeric. Winsorization threshold, default is 1.5.
@@ -14,7 +15,7 @@
 #' lrr, log R ratio (`obs - pred`). shift, shift factor of the baseline signal.
 #' @export
 #'
-tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE, winsorize=FALSE, k=25, tau=1.5) {
+tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE, match.sex=FALSE, winsorize=FALSE, k=25, tau=1.5) {
   # infer sex if not given
   if (is.null(sex)) {
     # sex <- sesame::inferSex(sdf)
@@ -46,6 +47,8 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
     med.mu <- median(mu, na.rm=TRUE)
     mu <- mu / med.mu
   }
+
+  # log2-transformation
   epsilon <- 1e-9
   log2epsilon <- log2(epsilon)
   mu <- dplyr::if_else(mu < epsilon, log2epsilon, log2(mu))
@@ -59,12 +62,20 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
     pon$pred.sex <- pon$pred.sex[rr]
   }
 
-  ## split data by autosomes vs chrX
-  chrX <- pon$probeCoords$seqnames == "chrX"
-  fita <- lm(y ~ ., data=data.frame(y=mu[!chrX], pon$data[!chrX, ]), na.action=na.omit)
-  fitx <- lm(y ~ ., data=data.frame(y=mu[chrX], pon$data[chrX, pon$pred.sex == sex]))
+  ##
+  if (match.sex) {
+    fit <- lm(y ~ ., data=data.frame(y=mu, pon$data[, pon$pred.sex == sex]), na.action=na.omit)
+    pred <- c(predict(fit))
+  } else {
+    ## split data by autosomes vs chrX
+    chrX <- pon$probeCoords$seqnames == "chrX"
+    fita <- lm(y ~ ., data=data.frame(y=mu[!chrX], pon$data[!chrX, ]), na.action=na.omit)
+    fitx <- lm(y ~ ., data=data.frame(y=mu[chrX], pon$data[chrX, pon$pred.sex == sex]))
+    pred <- c(predict(fita), predict(fitx))
+  }
 
-  pred <- c(predict(fita), predict(fitx))
+
+
 
   if (!identical(names(pred), names(mu))) {
     stop("There could be missing data in PoN.")
@@ -87,10 +98,12 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
   }
   names(lrr) <- names(mu)
 
+  ## estimate noise
+  noise <- sqrt(diff(mu)^2 / (length(mu) - 1))
   # shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
   #                method = "Brent", lower = -100, upper = 100)$par
 
   return(
-    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr) #, shift=shift)
+    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr, noise=noise) #, shift=shift)
   )
 }

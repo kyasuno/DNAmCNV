@@ -10,6 +10,7 @@
 #' @param tau numeric. Winsorization threshold, default is 1.5.
 #' @param adjust.baseline logical. Shift factor is calculated using limma::weighted.median of lrr among potentially
 #' copy neutral segments (abs(lrr) < 0.1) (default: FALSE).
+#' @param cn.cutoff numeric. Cutoff value of log2-ratio defining the copy-neutral segments (default: 0.1). This is used only when adjust.baseline = TRUE.
 #' @param use.n.probes logical. If TRUE, the number of probes (bins) will be used as weights in the baseline adjusment.
 #' If FALSE, the physical length of segments will be used as weights. (Default: TRUE).
 #' @param recursive logical. Effective only for denoise.method = "rmf". If TRUE, median filtering is applied recursively. Default: FALSE.
@@ -19,7 +20,8 @@
 #' @export
 #'
 run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "rmf"),
-                             kmin=5, gamma=40, normalize=TRUE, k=25, tau=1.5, adjust.baseline=FALSE,
+                             kmin=5, gamma=40, normalize=TRUE, k=25, tau=1.5,
+                             adjust.baseline=FALSE, cn.cutoff=0.1,
                              use.n.probes=TRUE,recursive=FALSE,
                              n.cores=1L, verbose=FALSE) {
   denoise.method <- match.arg(denoise.method)

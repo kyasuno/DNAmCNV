@@ -72,11 +72,15 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
     dplyr::rename(n.markers=n.probes)
 
   # check any bias in lrr for copy-neutral segment
-  cns <- segs |> dplyr::filter(abs(mean) < 0.1)
-  if (use.n.probes) {
-    cns.median <- with(cns, limma::weighted.median(mean, n.markers))
+  if (adjust.baseline) {
+    cns <- segs |> dplyr::filter(abs(mean) < 0.1)
+    if (use.n.probes) {
+      cns.median <- with(cns, limma::weighted.median(mean, n.markers))
+    } else {
+      cns.median <- with(cns, limma::weighted.median(mean, sizeMb))
+    }
   } else {
-    cns.median <- with(cns, limma::weighted.median(mean, sizeMb))
+    cns.median <- 0.0
   }
 
 

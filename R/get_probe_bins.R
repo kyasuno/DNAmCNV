@@ -9,17 +9,10 @@
 #'
 get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
 
-  if (bin.size > 1L) {
-    tiled <- GenomicRanges::tileGenome(hg38.seqinfo,
-                                       tilewidth = bin.size, cut.last.tile.in.chrom = TRUE)
-    keep <- as.character(seqnames(tiled)) %in% paste0("chr", c(1:22, "X"))
-    tiled <- tiled[keep]
-  } else {
-    tiled <- GenomicRanges::GRanges(
-      seqnames=crs$probeCoords$seqnames,
-      IRanges::IRanges(start=crs$probeCoords$start, end=crs$probeCoords$end)
-    )
-  }
+  tiled <- GenomicRanges::tileGenome(hg38.seqinfo,
+                                     tilewidth = bin.size, cut.last.tile.in.chrom = TRUE)
+  keep <- as.character(seqnames(tiled)) %in% paste0("chr", c(1:22, "X"))
+  tiled <- tiled[keep]
 
   # exclude centromeres
   centro.gr <- GenomicRanges::GRanges(

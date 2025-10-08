@@ -74,9 +74,6 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
     pred <- c(predict(fita), predict(fitx))
   }
 
-
-
-
   if (!identical(names(pred), names(mu))) {
     stop("There could be missing data in PoN.")
   }
@@ -99,7 +96,7 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
   names(lrr) <- names(mu)
 
   ## estimate noise
-  noise <- sqrt(diff(mu)^2 / (length(mu) - 1))
+  noise <- sqrt(sum(diff(mu)^2) / (length(mu) - 1))
   # shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
   #                method = "Brent", lower = -100, upper = 100)$par
 

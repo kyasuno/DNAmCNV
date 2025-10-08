@@ -97,10 +97,12 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
 
   ## estimate noise
   noise <- sqrt(sum(diff(mu)^2) / (length(mu) - 1))
-  # shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
-  #                method = "Brent", lower = -100, upper = 100)$par
+
+  ## shift value from conumee2
+  shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),
+                 method = "Brent", lower = -100, upper = 100)$par
 
   return(
-    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr, noise=noise) #, shift=shift)
+    list(probeCoords=pon$probeCoords, observed=mu, predicted=pred, lrr=lrr, noise=noise, shift=shift)
   )
 }

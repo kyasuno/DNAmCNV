@@ -15,13 +15,13 @@ annotate_segments <- function(segs) {
   cyto.gr <- GenomicRanges::GRanges(
     seqnames=cytoband$chrom,
     IRanges::IRanges(start=cytoband$chromStart, end=cytoband$chromEnd),
-    gieStain=cytoband$gieStain,
+    gieStain=cytoband$gieStain
   )
   acen.gr <- reduce(cyto.gr[cytoband$gieStain == "acen"])
 
   segs.gr <- GenomicRanges::GRanges(
     seqnames=segs$segments$seqnames,
-    IRanges::IRanges(start=segs$segments$start, end=segs$segments$end),
+    IRanges::IRanges(start=segs$segments$start, end=segs$segments$end)
   )
 
   ov <- findOverlaps(segs.gr, acen.gr, type="within")

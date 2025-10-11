@@ -96,7 +96,7 @@ tangent_normalization <- function(sdf, sex=NULL, cutoff=-3.5, pon, use.mask=TRUE
   names(lrr) <- names(mu)
 
   ## estimate noise
-  noise <- sqrt(sum(diff(mu)^2) / (length(mu) - 1))
+  noise <- mad(abs(diff(lrr))) # sqrt(sum(diff(lrr)^2) / (length(lrr) - 1))
 
   ## shift value from conumee2
   shift <- optim(0, function(s) median(abs(lrr - s), na.rm = TRUE),

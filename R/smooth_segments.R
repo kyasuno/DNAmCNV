@@ -10,9 +10,10 @@
 smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1) {
   newsegs <- segs$segments |>
     dplyr::mutate(
-      CN=dplyr::if_else(mean.lrr < loss.lrr, "LOSS", dplyr::if_else(mean.lrr > gain.lrr, "GAIN", "CN"))
+      CN=dplyr::if_else(mean.lrr < loss.lrr, "LOSS", dplyr::if_else(mean.lrr > gain.lrr, "GAIN", "CN")),
+      chrArm=paste0(seqnames, arm)
     )
-  res <- lapply(split(newsegs, newsegs$seqnames), function(df) {
+  res <- lapply(split(newsegs, newsegs$chrArm), function(df) {
     if (nrow(df) == 0) { return(NULL) }
     if (nrow(df) == 1) {
       return(
@@ -84,7 +85,7 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1) {
     }
     out
   }) |>
-    dplyr::bind_rows()
+    dplyr::bind_rows() |> dplyr::arrange(seqnames, arm)
   segs <- c(segs, list(smoothed=res))
   segs
 }

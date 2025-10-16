@@ -99,7 +99,7 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
   qx <- S4Vectors::queryHits(X)
   sx <- S4Vectors::subjectHits(X)
   sx.list <- split(x=sx, f=qx)
-  lrr.stats <- map_dfr(sx.list, function(idx) {
+  lrr.stats <- purrr::map_dfr(sx.list, function(idx) {
     x <- probeData$lrr.denoised[idx]
     tibble::tibble(
       mean.lrr=mean(x - cns.median, na.rm=TRUE),

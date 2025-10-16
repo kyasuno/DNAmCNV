@@ -10,6 +10,7 @@ tangent_normalization(
   cutoff = -3.5,
   pon,
   use.mask = TRUE,
+  match.sex = FALSE,
   winsorize = FALSE,
   k = 25,
   tau = 1.5
@@ -25,6 +26,8 @@ tangent_normalization(
 \item{pon}{list. panel of normal data.}
 
 \item{use.mask}{logical. Use SeSAMe mask to filter signals (default: TRUE).}
+
+\item{match.sex}{logical. If true, use sex-matched panel for autosomes}
 
 \item{winsorize}{logical. Winsorize after normalization (default: FALSE).}
 

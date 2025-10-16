@@ -9,6 +9,8 @@ get_sex_info(sdf, platform, cutoff = -3.5)
 \arguments{
 \item{sdf}{SigDF object.}
 
+\item{platform}{character. HM450, EPIC, or EPICv2.}
+
 \item{cutoff}{a cutoff value of log2(medianY/medianX) for sex inference (default: -3.5).}
 }
 \value{

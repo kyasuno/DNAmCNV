@@ -30,7 +30,9 @@ Imports:
 	wesanderson,
 	copynumber,
 	parallel,
-	matrixStats
+	matrixStats,
+	sesame,
+	sesameData
 Depends: 
     R (>= 4.3.0)
 LazyData: true

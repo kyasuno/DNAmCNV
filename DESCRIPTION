@@ -32,7 +32,8 @@ Imports:
 	parallel,
 	matrixStats,
 	sesame,
-	sesameData
+	sesameData,
+	partitions
 Depends: 
     R (>= 4.3.0)
 LazyData: true

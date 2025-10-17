@@ -101,13 +101,25 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
   sx.list <- split(x=sx, f=qx)
   lrr.stats <- purrr::map_dfr(sx.list, function(idx) {
     x <- probeData$lrr.denoised[idx]
-    tibble::tibble(
-      mean.lrr=mean(x - cns.median, na.rm=TRUE),
-      sd.lrr=sd(x - cns.median, na.rm=TRUE) #mad(x, na.rm=TRUE) / qnorm(3/4)
-    ) |>
-      dplyr::mutate(
-        Z.lrr=dplyr::if_else(sd.lrr > 0, mean.lrr / sd.lrr, NA_real_)
-      )
+    ## for chrX, we should not shift the baseline.
+    chrom <- probeData$seqnames[idx][1]
+    if (chrom == "chrX") {
+      tibble::tibble(
+        mean.lrr=mean(x, na.rm=TRUE),
+        sd.lrr=sd(x, na.rm=TRUE) #mad(x, na.rm=TRUE) / qnorm(3/4)
+      ) |>
+        dplyr::mutate(
+          Z.lrr=dplyr::if_else(sd.lrr > 0, mean.lrr / sd.lrr, NA_real_)
+        )
+    } else {
+      tibble::tibble(
+        mean.lrr=mean(x - cns.median, na.rm=TRUE),
+        sd.lrr=sd(x - cns.median, na.rm=TRUE) #mad(x, na.rm=TRUE) / qnorm(3/4)
+      ) |>
+        dplyr::mutate(
+          Z.lrr=dplyr::if_else(sd.lrr > 0, mean.lrr / sd.lrr, NA_real_)
+        )
+    }
   })
   segs <- dplyr::bind_cols(segs, lrr.stats) |>
     dplyr::mutate(seg.id=1L:n())

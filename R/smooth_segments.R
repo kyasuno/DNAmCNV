@@ -61,7 +61,7 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, ga
               n.markers=sum(n.mk),
               mean.lrr=weighted.mean(lrr, n.mk),
               CN=CN,
-              nMerged=length(start)
+              nMerged=length(n.mk)
             ) |>
               dplyr::mutate(
                 sizeMb=(end - start + 1)/1e6

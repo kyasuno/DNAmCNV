@@ -81,7 +81,7 @@ annotate_segments <- function(segs, target_genes=NULL, annotate_genes=TRUE, gene
 
   if (is.null(genes)) {
     genes <- sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)
-    keep <- GenomeInfoDb::seqnames(genes) %in% paste0("chr", c(1:22, "X"))
+    keep <- as.character(GenomeInfoDb::seqnames(genes)) %in% paste0("chr", c(1:22, "X"))
     genes <- genes[keep]
   }
 

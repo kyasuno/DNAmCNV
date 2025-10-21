@@ -4,11 +4,12 @@
 #' @param segs list. Output of run_segmentation or annotate_segments.
 #' @param loss.lrr numeric. Cutoff value of lrr for losses (default: -0.1). If NULL, segments are not classified.
 #' @param gain.lrr numeric. Cutoff value of lrr for gains (default: 0.1). If NULL, segments are not classified.
+#' @param use.pcf logical. Use PCF method within each class (default: FALSE).
 #' @param gamma numeric. penalty for each discontinuity in the curve (default: 40).
 #' @returns list. The same list with additional tbl named smoothed.
 #' @export
 #'
-smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, gamma=40) {
+smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, gamma=40) {
   newsegs <- segs$segments |>
     dplyr::mutate(
       CN=dplyr::if_else(mean.lrr < loss.lrr, "LOSS", dplyr::if_else(mean.lrr > gain.lrr, "GAIN", "CN")),
@@ -47,14 +48,49 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, gamma=40) {
         if (i == nrow(df)) {
           # we must stop here
           # find optimal smoothing
-          tmp <- find_optimal_partition(chrom=chrom, arm=arm, start=start, end=end,
-                                        lrr=lrr, n.mk=n.mk, CN=CN, gamma=gamma)
+          if (use.pcf) {
+            tmp <- find_optimal_partition(chrom=chrom, arm=arm, start=start, end=end,
+                                          lrr=lrr, n.mk=n.mk, CN=CN, gamma=gamma)
+          } else {
+            tmp <- tibble::tibble(
+              seqnames=chrom,
+              arm=arm,
+              start=min(start),
+              end=max(end),
+              sizeMb=NA_real_,
+              n.markers=sum(n.mk),
+              mean.lrr=weighted.mean(lrr, n.mk),
+              CN=CN,
+              nMerged=length(start)
+            ) |>
+              dplyr::mutate(
+                sizeMb=(end - start + 1)/1e6
+              )
+          }
+
           out <- dplyr::bind_rows(out, tmp)
         } # otherwise, continue
       } else {
         # record the previous segment
-        tmp <- find_optimal_partition(chrom=chrom, arm=arm, start=start, end=end,
-                                      lrr=lrr, n.mk=n.mk, CN=CN, gamma=gamma)
+        if (use.pcf) {
+          tmp <- find_optimal_partition(chrom=chrom, arm=arm, start=start, end=end,
+                                        lrr=lrr, n.mk=n.mk, CN=CN, gamma=gamma)
+        } else {
+          tmp <- tibble::tibble(
+            seqnames=chrom,
+            arm=arm,
+            start=min(start),
+            end=max(end),
+            sizeMb=NA_real_,
+            n.markers=sum(n.mk),
+            mean.lrr=weighted.mean(lrr, n.mk),
+            CN=CN,
+            nMerged=length(start)
+          ) |>
+            dplyr::mutate(
+              sizeMb=(end - start + 1)/1e6
+            )
+        }
 
         out <- dplyr::bind_rows(out, tmp)
         if (i < nrow(df)) {

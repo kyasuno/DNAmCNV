@@ -4,13 +4,26 @@
 \alias{annotate_segments}
 \title{Annotate segments}
 \usage{
-annotate_segments(segs)
+annotate_segments(
+  segs,
+  target_genes = NULL,
+  annotate_genes = TRUE,
+  genes_for_annotation = NULL
+)
 }
 \arguments{
 \item{segs}{list. Output of run_segmentation.}
+
+\item{target_genes}{GRanges object containing genes of interest (default: NULL).}
+
+\item{annotate_genes}{logical. If TRUE, annotate genes with segment id and mean.lrr.}
+
+\item{genes_for_annotation}{GRanges object containing genes/transcripts. If \code{NULL},
+the program calls \code{sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)}.}
 }
 \value{
-list. The same list with additional columns in segs$segments.
+list. The same list with additional columns in segs$segments or an expanded list
+that includes genes annotated with overlapping segments.
 }
 \description{
 Annotate segments

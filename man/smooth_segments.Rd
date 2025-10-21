@@ -4,7 +4,13 @@
 \alias{smooth_segments}
 \title{Smooth segments}
 \usage{
-smooth_segments(segs, loss.lrr = -0.1, gain.lrr = 0.1)
+smooth_segments(
+  segs,
+  loss.lrr = -0.1,
+  gain.lrr = 0.1,
+  use.pcf = FALSE,
+  gamma = 40
+)
 }
 \arguments{
 \item{segs}{list. Output of run_segmentation or annotate_segments.}
@@ -12,6 +18,10 @@ smooth_segments(segs, loss.lrr = -0.1, gain.lrr = 0.1)
 \item{loss.lrr}{numeric. Cutoff value of lrr for losses (default: -0.1). If NULL, segments are not classified.}
 
 \item{gain.lrr}{numeric. Cutoff value of lrr for gains (default: 0.1). If NULL, segments are not classified.}
+
+\item{use.pcf}{logical. Use PCF method for smoothing within each CNV status (default: FALSE).}
+
+\item{gamma}{numeric. penalty for each discontinuity in the curve (default: 40).}
 }
 \value{
 list. The same list with additional tbl named smoothed.

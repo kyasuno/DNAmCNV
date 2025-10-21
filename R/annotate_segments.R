@@ -85,7 +85,7 @@ annotate_segments <- function(segs, target_genes=NULL, annotate_genes=TRUE, gene
     genes <- sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)
   }
 
-  keep <- seqnames(genes) %in% paste0("chr", c(1:22, "X"))
+  keep <- GenomicRanges::seqnames(genes) %in% paste0("chr", c(1:22, "X"))
   genes <- genes[keep]
 
   ov <- GenomicRanges::findOverlaps(genes, segs.gr)

@@ -4,7 +4,7 @@
 #' @param segs list. Output of run_segmentation or annotate_segments.
 #' @param loss.lrr numeric. Cutoff value of lrr for losses (default: -0.1). If NULL, segments are not classified.
 #' @param gain.lrr numeric. Cutoff value of lrr for gains (default: 0.1). If NULL, segments are not classified.
-#' @param use.pcf logical. Use PCF method within each class (default: FALSE).
+#' @param use.pcf logical. Use PCF method for smoothing within each CNV status (default: FALSE).
 #' @param gamma numeric. penalty for each discontinuity in the curve (default: 40).
 #' @returns list. The same list with additional tbl named smoothed.
 #' @export
@@ -36,7 +36,8 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, ga
     lrr <- df$mean.lrr[1]
     for (i in 2:nrow(df)) {
       CN.i <- df$CN[i]
-      if (CN.i == CN) {
+      lrr.i <- df$mean.lrr[i]
+      if (CN.i == CN && abs(lrr[length(lrr)] - lrr.i) < 0.05) {
         # merge segments
         # arm <- c(arm, df$arm[i]) # no need to update arm anymore as we analyze each arm
         # end <- df$end[i]
@@ -85,7 +86,7 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, ga
             n.markers=sum(n.mk),
             mean.lrr=weighted.mean(lrr, n.mk),
             CN=CN,
-            nMerged=length(start)
+            nMerged=length(n.mk)
           ) |>
             dplyr::mutate(
               sizeMb=(end - start + 1)/1e6

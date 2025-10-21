@@ -8,7 +8,7 @@ annotate_segments(
   segs,
   target_genes = NULL,
   annotate_genes = TRUE,
-  genes_for_annotation = NULL
+  genes = NULL
 )
 }
 \arguments{
@@ -18,7 +18,7 @@ annotate_segments(
 
 \item{annotate_genes}{logical. If TRUE, annotate genes with segment id and mean.lrr.}
 
-\item{genes_for_annotation}{GRanges object containing genes/transcripts. If \code{NULL},
+\item{genes}{GRanges object containing genes/transcripts. If \code{NULL},
 the program calls \code{sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)}.}
 }
 \value{

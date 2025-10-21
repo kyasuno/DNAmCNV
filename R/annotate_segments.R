@@ -3,13 +3,13 @@
 #' @param segs list. Output of run_segmentation.
 #' @param target_genes GRanges object containing genes of interest (default: NULL).
 #' @param annotate_genes logical. If TRUE, annotate genes with segment id and mean.lrr.
-#' @param genes_for_annotation GRanges object containing genes/transcripts. If `NULL`,
+#' @param genes GRanges object containing genes/transcripts. If `NULL`,
 #' the program calls `sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)`.
 #' @returns list. The same list with additional columns in segs$segments or an expanded list
 #' that includes genes annotated with overlapping segments.
 #' @export
 #'
-annotate_segments <- function(segs, target_genes=NULL, annotate_genes=TRUE, genes_for_annotation=NULL) {
+annotate_segments <- function(segs, target_genes=NULL, annotate_genes=TRUE, genes=NULL) {
   cytoband <- sesameData::sesameData_getGenomeInfo("hg38")$cytoBand |>
     tibble::as_tibble() |>
     dplyr::filter(chrom %in% paste0("chr", c(1:22, "X"))) |>
@@ -83,10 +83,10 @@ annotate_segments <- function(segs, target_genes=NULL, annotate_genes=TRUE, gene
     genes <- genes_for_annotation
   } else {
     genes <- sesameData::sesameData_getTxnGRanges("hg38", merge2gene=TRUE)
+    keep <- GenomeInfoDb::seqnames(genes) %in% paste0("chr", c(1:22, "X"))
+    genes <- genes[keep]
   }
 
-  keep <- GenomicRanges::seqnames(genes) %in% paste0("chr", c(1:22, "X"))
-  genes <- genes[keep]
 
   ov <- GenomicRanges::findOverlaps(genes, segs.gr)
   qH <- S4Vectors::queryHits(ov)

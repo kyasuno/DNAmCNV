@@ -6,24 +6,24 @@
 \usage{
 detect_gene_cnv(
   segs,
-  crs,
+  crs = NULL,
   genes,
-  extend.bp = 0L,
-  conf = 0.95,
+  extend.bp = 5e+05,
+  conf = 0.99,
   R = 100,
   blockLength = 5e+05,
   proportionLength = TRUE
 )
 }
 \arguments{
-\item{crs}{list. Output of \code{tangent_normalization}.}
+\item{crs}{list. Output of \code{tangent_normalization}. Necessary only when probe-binning was used (default: NULL).}
 
 \item{genes}{GenomicRanges object (predefined gene list is available: \code{data(genes.hg38)})}
 
-\item{extend.bp}{integer. Extend gene interval for \code{+/- extend.bp} (default: \code{0L}).}
+\item{extend.bp}{integer. Extend gene interval for \code{+/- extend.bp} (default: \code{500000L}).}
 
 \item{conf}{numeric. Confidence level to calculate to determine the log2-threshold for
-high-level alterations. Choose between \code{0.95} and \code{0.99}. Default to \code{0.95}.}
+high-level alterations. Choose between \code{0.95} and \code{0.99}. Default to \code{0.99}.}
 
 \item{R}{numeric. Parameter for the \code{bootRanges} function.
 The number of bootstrap samples to generate. Default to \code{100}.}
@@ -35,7 +35,7 @@ The number of bootstrap samples to generate. Default to \code{100}.}
 bootstrap, whether to use scaled block lengths, (scaling by the proportion of the segmentation
 state out of the total genome length)}
 
-\item{segdata}{list. Output of \code{run_segmentation} or \code{annotate_segments}.}
+\item{segdata}{list. Output of \code{run_segmentation}.}
 }
 \value{
 list. genes, tbl of gene-level result. amp/del_threshold, thresholds for amplification

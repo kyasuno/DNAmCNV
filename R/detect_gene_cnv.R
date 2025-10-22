@@ -2,12 +2,12 @@
 #'
 #' @description Detect gene-level (or any local region) CNVs. Adopted from conumee2.0
 #' (https://github.com/hovestadtlab/conumee2.git)
-#' @param segdata list. Output of \code{run_segmentation} or \code{annotate_segments}.
-#' @param crs list. Output of \code{tangent_normalization}.
+#' @param segdata list. Output of \code{run_segmentation}.
+#' @param crs list. Output of \code{tangent_normalization}. Necessary only when probe-binning was used (default: NULL).
 #' @param genes GenomicRanges object (predefined gene list is available: \code{data(genes.hg38)})
-#' @param extend.bp integer. Extend gene interval for \code{+/- extend.bp} (default: \code{0L}).
+#' @param extend.bp integer. Extend gene interval for \code{+/- extend.bp} (default: \code{500000L}).
 #' @param conf numeric. Confidence level to calculate to determine the log2-threshold for
-#' high-level alterations. Choose between \code{0.95} and \code{0.99}. Default to \code{0.95}.
+#' high-level alterations. Choose between \code{0.95} and \code{0.99}. Default to \code{0.99}.
 #' @param R numeric. Parameter for the \code{bootRanges} function.
 #' The number of bootstrap samples to generate. Default to \code{100}.
 #' @param blockLength numeric. Parameter for the \code{bootRanges} function. The length
@@ -19,7 +19,7 @@
 #' and deletions determined by bootRanges.
 #' @export
 #'
-detect_gene_cnv <- function(segs, crs, genes, extend.bp=0L, conf = 0.95, R = 100, blockLength = 500000, proportionLength = TRUE) {
+detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99, R = 100, blockLength = 500000, proportionLength = TRUE) {
   data(hg38.seqinfo)
 
   seq <- rep(segs$segments$mean.lrr, segs$segments$n.markers)
@@ -89,10 +89,19 @@ detect_gene_cnv <- function(segs, crs, genes, extend.bp=0L, conf = 0.95, R = 100
   del_t <- round(sort(boots$lrr.adjusted)[t], digits = 3)
   amp_t <- round(sort(boots$lrr.adjusted, decreasing =  TRUE)[t], digits = 3)
 
-  probes.gr <- GenomicRanges::GRanges(
-    seqnames=crs$probeCoords$seqnames,
-    ranges=IRanges::IRanges(start=crs$probeCoords$start, end=crs$probeCoords$end)
-  )
+  if (is.null(crs)) {
+    probes.gr <- GenomicRanges::GRanges(
+      seqnames=segs$probeData$seqnames,
+      ranges=IRanges::IRanges(start=segs$probeData$start, end=segs$probeData$end)
+    )
+    probe_lrr <- segs$probeData$lrr.denoised
+  } else {
+    probes.gr <- GenomicRanges::GRanges(
+      seqnames=crs$probeCoords$seqnames,
+      ranges=IRanges::IRanges(start=crs$probeCoords$start, end=crs$probeCoords$end)
+    )
+    probe_lrr <- crs$lrr
+  }
 
   if (extend.bp > 0L) {
     BiocGenerics::start(genes) <- BiocGenerics::start(genes) - extend.bp
@@ -103,8 +112,8 @@ detect_gene_cnv <- function(segs, crs, genes, extend.bp=0L, conf = 0.95, R = 100
   qx <- queryHits(ov)
   sx <- subjectHits(ov)
 
-  genes.lrr <- vapply(split(crs$lrr[sx], qx), median, FUN.VALUE = numeric(1)) - segs$cns.shift
-  genes.nprobes <- vapply(split(crs$lrr[sx], qx), length, FUN.VALUE = numeric(1))
+  genes.lrr <- vapply(split(probe_lrr[sx], qx), median, FUN.VALUE = numeric(1)) - segs$cns.shift
+  genes.nprobes <- vapply(split(probe_lrr[sx], qx), length, FUN.VALUE = numeric(1))
   genes.w.data <- genes[unique(qx)]
   mcols(genes.w.data)$n.probes <- genes.nprobes
   mcols(genes.w.data)$lrr <- genes.lrr

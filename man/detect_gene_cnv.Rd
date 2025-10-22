@@ -12,7 +12,8 @@ detect_gene_cnv(
   conf = 0.99,
   R = 100,
   blockLength = 5e+05,
-  proportionLength = TRUE
+  proportionLength = TRUE,
+  use.denoised = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ The number of bootstrap samples to generate. Default to \code{100}.}
 \item{proportionLength}{logical. From the \code{nullranges} package: for the segmented block
 bootstrap, whether to use scaled block lengths, (scaling by the proportion of the segmentation
 state out of the total genome length)}
+
+\item{use.denoised}{logical. Use raw signal (use.denoised = FALSE) or denoised signal (use.denoised = TRUE).}
 
 \item{segdata}{list. Output of \code{run_segmentation}.}
 }

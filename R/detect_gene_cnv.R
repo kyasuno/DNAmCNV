@@ -15,23 +15,33 @@
 #' @param proportionLength logical. From the \code{nullranges} package: for the segmented block
 #' bootstrap, whether to use scaled block lengths, (scaling by the proportion of the segmentation
 #' state out of the total genome length)
+#' @param use.denoised logical. Use raw signal (use.denoised = FALSE) or denoised signal (use.denoised = TRUE).
 #' @returns list. genes, tbl of gene-level result. amp/del_threshold, thresholds for amplification
 #' and deletions determined by bootRanges.
 #' @export
 #'
-detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99, R = 100, blockLength = 500000, proportionLength = TRUE) {
+detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99, R = 100, blockLength = 500000, proportionLength = TRUE, use.denoised=FALSE) {
   data(hg38.seqinfo)
 
   seq <- rep(segs$segments$mean.lrr, segs$segments$n.markers)
   km <- kmeans(seq, centers=3, nstart=25)
 
   chroms <- paste0("chr", c(1:22, "X"))
-  bins.df <- segs$probeData |>
-    dplyr::mutate(
-      seqnames=as.character(seqnames) |> factor(levels=chroms),
-      lrr.adjusted=lrr.denoised - segs$cns.shift,
-      state=km$cluster
-    )
+  if (use.denoised) {
+    bins.df <- segs$probeData |>
+      dplyr::mutate(
+        seqnames=as.character(seqnames) |> factor(levels=chroms),
+        lrr.adjusted=lrr.denoised - segs$cns.shift,
+        state=km$cluster
+      )
+  } else {
+    bins.df <- segs$probeData |>
+      dplyr::mutate(
+        seqnames=as.character(seqnames) |> factor(levels=chroms),
+        lrr.adjusted=lrr - segs$cns.shift,
+        state=km$cluster
+      )
+  }
 
   # This part assumes that all the bins are connected.
   # In our case, we need to merge consecutive bins if the states are the same
@@ -94,7 +104,12 @@ detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99
       seqnames=segs$probeData$seqnames,
       ranges=IRanges::IRanges(start=segs$probeData$start, end=segs$probeData$end)
     )
-    probe_lrr <- segs$probeData$lrr.denoised
+    if (use.denoised) {
+      probe_lrr <- segs$probeData$lrr.denoised
+    } else {
+      probe_lrr <- segs$probeData$lrr
+    }
+
   } else {
     probes.gr <- GenomicRanges::GRanges(
       seqnames=crs$probeCoords$seqnames,

@@ -94,7 +94,7 @@ detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99
       seqnames=segs$probeData$seqnames,
       ranges=IRanges::IRanges(start=segs$probeData$start, end=segs$probeData$end)
     )
-    probe_lrr <- segs$probeData$lrr
+    probe_lrr <- segs$probeData$lrr.denoised
   } else {
     probes.gr <- GenomicRanges::GRanges(
       seqnames=crs$probeCoords$seqnames,

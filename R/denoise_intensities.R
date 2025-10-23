@@ -2,7 +2,7 @@
 #'
 #' @param x numeric vector.
 #' @param chrArm a factor of chromosome arms of the same size as x.
-#' @param k window size to be used for the sliding window (actually half-window size).
+#' @param k window size to be used for the sliding window (actually a half-window size).
 #' @param recursive logical. Perform median filters recursively or non-recursively (default: FALSE).
 #' @param verbose logical.
 #' @returns numeric vector.

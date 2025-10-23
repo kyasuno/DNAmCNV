@@ -62,8 +62,11 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
     )
   # for binned data, adjust start coordinates
   if (any(probeData$end != probeData$start)) {
-    tmp <- probeData |> dplyr::select(seqnames, position, start) |> dplyr::rename(start.pos=position)
-    segs <- left_join(segs, tmp, by=c("seqnames", "start.pos")) |>
+    tmp <- probeData |>
+      dplyr::select(seqnames, position, start) |>
+      dplyr::rename(start.pos=position)
+    segs <- segs |>
+      dplyr::left_join(tmp, by=c("seqnames", "start.pos")) |>
       dplyr::rename(end=end.pos)
   } else {
     segs <- segs |> dplyr::rename(start=start.pos, end=end.pos)
@@ -75,7 +78,8 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
 
   # check any bias in lrr for copy-neutral segment
   if (adjust.baseline) {
-    cns <- segs |> dplyr::filter(abs(mean) < cn.cutoff, seqnames != "chrX") # use only autosomes
+    cns <- segs |>
+      dplyr::filter(abs(mean) < cn.cutoff, seqnames != "chrX") # use only autosomes
     if (use.n.probes) {
       cns.median <- with(cns, limma::weighted.median(mean, n.markers))
     } else {
@@ -89,16 +93,17 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
   # calculate Z score for lrr
   segs.gr <- GenomicRanges::GRanges(
     seqnames=segs$seqnames,
-    IRanges::IRanges(start=segs$start, end=segs$end)
+    ranges=IRanges::IRanges(start=segs$start, end=segs$end)
   )
   probe.gr <- GenomicRanges::GRanges(
     seqnames=probeData$seqnames,
-    IRanges::IRanges(start=probeData$start, end=probeData$end)
+    ranges=IRanges::IRanges(start=probeData$start, end=probeData$end)
   )
   X <- GenomicRanges::findOverlaps(segs.gr, probe.gr)
   qx <- S4Vectors::queryHits(X)
   sx <- S4Vectors::subjectHits(X)
   sx.list <- split(x=sx, f=qx)
+
   lrr.stats <- purrr::map_dfr(sx.list, function(idx) {
     x <- probeData$lrr.denoised[idx]
     ## for chrX, we should not shift the baseline.
@@ -107,29 +112,21 @@ run_segmentation <- function(probeData, denoise.method=c("none", "winsorize", "r
       tibble::tibble(
         mean.lrr=mean(x, na.rm=TRUE),
         sd.lrr=sd(x, na.rm=TRUE) #mad(x, na.rm=TRUE) / qnorm(3/4)
-      ) |>
-        dplyr::mutate(
-          Z.lrr=dplyr::if_else(sd.lrr > 0, mean.lrr / sd.lrr, NA_real_)
-        )
+      )
     } else {
       tibble::tibble(
         mean.lrr=mean(x - cns.median, na.rm=TRUE),
         sd.lrr=sd(x - cns.median, na.rm=TRUE) #mad(x, na.rm=TRUE) / qnorm(3/4)
-      ) |>
-        dplyr::mutate(
-          Z.lrr=dplyr::if_else(sd.lrr > 0, mean.lrr / sd.lrr, NA_real_)
-        )
+      )
     }
   })
-  segs <- dplyr::bind_cols(segs, lrr.stats) |>
-    dplyr::mutate(seg.id=1L:n())
+  segs <- dplyr::bind_cols(segs, lrr.stats) |> dplyr::mutate(seg.id=1L:n())
 
   probeData$seg.id <- NA_integer_
   for (i in seq_along(sx.list)) {
     probeData$seg.id[sx.list[[i]]] <- i
   }
-  probeData <- probeData |>
-    dplyr::select(-chrom, -arms, -position)
+  probeData <- probeData |> dplyr::select(-chrom, -arms, -position)
 
   return(
     list(probeData=probeData, segments=segs, cns.shift=cns.median)

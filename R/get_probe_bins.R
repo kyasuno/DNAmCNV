@@ -11,7 +11,7 @@ get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
 
   tiled <- GenomicRanges::tileGenome(hg38.seqinfo,
                                      tilewidth = bin.size, cut.last.tile.in.chrom = TRUE)
-  keep <- as.character(seqnames(tiled)) %in% paste0("chr", c(1:22, "X"))
+  keep <- as.character(GenomeInfoDb::seqnames(tiled)) %in% paste0("chr", c(1:22, "X"))
   tiled <- tiled[keep]
 
   # exclude centromeres
@@ -20,7 +20,7 @@ get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
     IRanges::IRanges(start=centromere.hg38$chromStart, end=centromere.hg38$chromEnd)
   )
 
-  qx <- queryHits(findOverlaps(tiled, centro.gr))
+  qx <- S4Vectors::queryHits(GenomicRanges::findOverlaps(tiled, centro.gr))
   tiled <- tiled[-qx]
 
   gr <- GenomicRanges::GRanges(
@@ -28,13 +28,13 @@ get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
     IRanges::IRanges(start=crs$probeCoords$start, end=crs$probeCoords$end)
   )
 
-  mcols(tiled)$nProbes <- countOverlaps(tiled, gr)
-  keep <- tiled$nProbes > 0
+  S4Vectors::mcols(tiled)$nProbes <- GenomicRanges::countOverlaps(tiled, gr)
+  keep <- S4Vectors::mcols(tiled)$nProbes > 0
   tiled <- tiled[keep]
 
-  o1 <- findOverlaps(query = tiled, subject = gr)
-  bins <- queryHits(o1)
-  prbs <- subjectHits(o1)
+  o1 <- GenomicRanges::findOverlaps(query = tiled, subject = gr)
+  bins <- S4Vectors::queryHits(o1)
+  prbs <- S4Vectors::subjectHits(o1)
 
   chrarm <- as.character(crs$probeCoords$chrArm)
 
@@ -45,7 +45,9 @@ get_probe_bins <- function(crs, bin.size=1000L, hg38.seqinfo, centromere.hg38) {
   mcols(tiled)$true.end <- vapply(split(crs$probeCoords$end[prbs], bins), dplyr::last, FUN.VALUE=double(1))
 
 
-  df <- tiled |> as_tibble() |> dplyr::select(-strand) |>
+  df <- tiled |>
+    tibble::as_tibble() |>
+    dplyr::select(-strand) |>
     dplyr::mutate(width=true.end - true.start + 1L) |>
     dplyr::rename(bin.start=start, bin.end=end) |>
     dplyr::rename(start=true.start, end=true.end) |>

@@ -11,7 +11,7 @@ denoise_intensities(x, chrArm, k, n.cores, recursive = FALSE, verbose = FALSE)
 
 \item{chrArm}{a factor of chromosome arms of the same size as x.}
 
-\item{k}{window size to be used for the sliding window (actually half-window size).}
+\item{k}{window size to be used for the sliding window (actually a half-window size).}
 
 \item{recursive}{logical. Perform median filters recursively or non-recursively (default: FALSE).}
 

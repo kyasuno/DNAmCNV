@@ -4,6 +4,7 @@
 #' @param min.gapwidth integer. For `GenomicRanges::reduce` function (default: 500L).
 #' @param max.probes integer. Maximum number of probes to be merged within a set of probes. Probes are split into nearly equally
 #' `ceiling(k/max.probes)` groups, where k is the number of probes in the group.
+#' @param n.cores integer. Number of cores to be used to run this function (default: 1).
 #' @returns tbl. seqnames, start, end, width, nProbes, chrArm and median log R ratio (lrr).
 #' @export
 #'
@@ -31,7 +32,7 @@ merge_nearby_probes <- function(crs, min.gapwidth, max.probes, n.cores=1L) {
   # analyze others
   revmap <- gr.red$revmap[binsize > 1]
 
-  merged <- mclapply(revmap, function(x) {
+  merged <- parallel::mclapply(revmap, function(x) {
         n <- length(x)
         if (n <= max.probes) {
           return(

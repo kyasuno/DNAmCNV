@@ -2,7 +2,7 @@
 #'
 #' @param df A tbl.
 #' @param hg38.seqinfo Use `data("hg38.seqinfo")`
-#' @param space.skip Space between chromosomes (default: 0.01)
+#' @param space.skip Space between chromosomes for genome-wide plot (default: 0.01)
 #' @returns list
 #' @import ggplot2
 #' @export

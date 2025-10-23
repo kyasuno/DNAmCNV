@@ -6,10 +6,11 @@
 #' @param gain.lrr numeric. Cutoff value of lrr for gains (default: 0.1). If NULL, segments are not classified.
 #' @param use.pcf logical. Use PCF method for smoothing within each CNV status (default: FALSE).
 #' @param gamma numeric. penalty for each discontinuity in the curve (default: 40).
+#' @param max.dist numeric. the maximu difference of mean.lrr between the neighboring segments to be merged (default: 0.1).
 #' @returns list. The same list with additional tbl named smoothed.
 #' @export
 #'
-smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, gamma=40) {
+smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, gamma=40, max.dist=0.1) {
   newsegs <- segs$segments |>
     dplyr::mutate(
       CN=dplyr::if_else(mean.lrr < loss.lrr, "LOSS", dplyr::if_else(mean.lrr > gain.lrr, "GAIN", "CN")),
@@ -37,7 +38,9 @@ smooth_segments <- function(segs, loss.lrr=-0.1, gain.lrr=0.1, use.pcf=FALSE, ga
     for (i in 2:nrow(df)) {
       CN.i <- df$CN[i]
       lrr.i <- df$mean.lrr[i]
-      if (CN.i == CN && abs(lrr[length(lrr)] - lrr.i) < 0.05) {
+      # we will merge segments if the CN state is unchanged and the minimum distance to the
+      # previous segments < max.dist
+      if (CN.i == CN && min(abs(lrr - lrr.i)) < max.dist) {
         # merge segments
         # arm <- c(arm, df$arm[i]) # no need to update arm anymore as we analyze each arm
         # end <- df$end[i]

@@ -45,6 +45,6 @@ list. genes, tbl of gene-level result. amp/del_threshold, thresholds for amplifi
 and deletions determined by bootRanges.
 }
 \description{
-Detect gene-level (or any local region) CNVs. Adopted from conumee2.0
+Detect gene-level (or any local region) CNVs. Adopted from conumee2
 (https://github.com/hovestadtlab/conumee2.git)
 }

@@ -11,7 +11,7 @@
 get_sex_info <- function(sdf, platform, cutoff=-3.5) {
   stopifnot(is(sdf, "SigDF"))
   if (platform == "EPICv2") {
-    pids <- lapply(str_split(sdf$Probe_ID, "\\_"), function(x) x[1]) |> unlist() |> unique()
+    pids <- vapply(stringr::str_split(sdf$Probe_ID, "\\_"), function(x) x[1], FUN.VALUE=character(1)) |> unique()
     platform <- "EPIC"
   } else {
     pids <- sdf$Probe_ID

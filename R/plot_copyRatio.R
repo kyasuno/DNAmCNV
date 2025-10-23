@@ -14,7 +14,8 @@
 #' @export
 #'
 plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
-                           hg38.seqinfo, centromere.hg38, ymax=1, space.skip=0.01, loss.lrr=NULL, gain.lrr=NULL) {
+                           hg38.seqinfo, centromere.hg38, ymax=1,
+                           space.skip=0.01, loss.lrr=NULL, gain.lrr=NULL) {
 
   cols <- RColorBrewer::brewer.pal(8,"Dark2")
   col.p <- RColorBrewer::brewer.pal(8,"Paired")
@@ -30,15 +31,18 @@ plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
   c.genome <- get_genomic_coord(centromere.hg38, hg38.seqinfo, space.skip=space.skip)
   centromere.hg38 <- c.genome$data
 
-  #p <- ggplot(inherit.aes=FALSE)
   p <- ggplot()
+
+  ## probe intensities
+
   if (!is.null(crs)) {
     crs <- crs |> dplyr::filter(seqnames %in% GenomeInfoDb::seqlevels(hg38.seqinfo))
     crs.genome <- get_genomic_coord(crs, hg38.seqinfo, space.skip=space.skip)
     crs <- crs.genome$data
     crs <- crs |>
       dplyr::mutate(
-        lrr=dplyr::if_else(lrr > ymax, ymax - thickness, dplyr::if_else(lrr < - ymax, -ymax + thickness, lrr))
+        lrr=dplyr::if_else(lrr > ymax, ymax - thickness,
+                           dplyr::if_else(lrr < - ymax, -ymax + thickness, lrr))
       )
     p <- p +
       geom_point(
@@ -47,6 +51,8 @@ plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
         inherit.aes=FALSE
       )
   }
+
+  ## segments
 
   segs <- segs |> dplyr::filter(seqnames %in% GenomeInfoDb::seqlevels(hg38.seqinfo))
   segs.genome <- get_genomic_coord(segs, hg38.seqinfo, space.skip=space.skip)
@@ -63,12 +69,12 @@ plot_copyRatio <- function(segs, crs=NULL, smoothed.segs=NULL,
     p <- p +
       geom_hline(yintercept=0, linewidth=0.5, colour="gray") +
       geom_rect(
-        data=segs |> filter(mean.lrr <= gain.lrr & mean.lrr >= loss.lrr),
+        data=segs |> dplyr::filter(mean.lrr <= gain.lrr & mean.lrr >= loss.lrr),
         aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
         colour="#E6AB02", fill="#E6AB02", na.rm=TRUE, inherit.aes=FALSE
       ) +
       geom_rect(
-        data=segs |> filter(mean.lrr > gain.lrr | mean.lrr < loss.lrr),
+        data=segs |> dplyr::filter(mean.lrr > gain.lrr | mean.lrr < loss.lrr),
         aes(xmin=.start, xmax=.end, ymin=lrr - thickness, ymax=lrr + thickness),
         colour="#A6761D", fill="#A6761D", na.rm=TRUE, inherit.aes=FALSE
       )

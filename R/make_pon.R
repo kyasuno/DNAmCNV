@@ -40,7 +40,7 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"), cutoff=-3.5,
     message("Removing probes in PAR region")
     parx <- GenomicRanges::GRanges(
       seqnames=c("chrX", "chrX"),
-      IRanges::IRanges(start=c(10001, 155701383)-1, end=c(2781479, 156030895))
+      ranges=IRanges::IRanges(start=c(10001, 155701383)-1, end=c(2781479, 156030895))
     )
     probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, parx)]
   }
@@ -55,8 +55,8 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"), cutoff=-3.5,
     data(acen.hg38)
     message("Removing probes in gieStain = acen")
     probeCoords <- probeCoords[!IRanges::overlapsAny(probeCoords, acen.hg38)]
-
   }
+
   # remove probes in exclude.region
   if (!is.null(exclude.regions)) {
     message("Removing probes in exclue.regions")
@@ -71,8 +71,8 @@ make_pon <- function(sdfs, platform=c("HM450", "EPIC", "EPICv2"), cutoff=-3.5,
   # infer sex
   message("Predicting sex of samples")
   # pred.sex <- parallel::mclapply(sdfs, function(sdf) sesame::inferSex(sdf), mc.cores=n.cores) |> unlist()
-  pred.sex <- lapply(sdfs, function(sdf) get_sex_info(sdf, platform=platform, cutoff=cutoff))
-  pred.sex <- lapply(pred.sex, function(lst) lst$pred.sex) |> unlist()
+  pred.sex <- parallel::mclapply(sdfs, function(sdf) get_sex_info(sdf, platform=platform, cutoff=cutoff), mc.cores=n.cores)
+  pred.sex <- vapply(pred.sex, function(lst) lst$pred.sex, FUN.VALUE = character(1))
 
   # calculate M+U
   MU <- parallel::mclapply(sdfs, function(sdf) {

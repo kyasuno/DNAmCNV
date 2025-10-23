@@ -11,7 +11,7 @@ get_genomic_coord(df, hg38.seqinfo, space.skip = 0.01)
 
 \item{hg38.seqinfo}{Use \code{data("hg38.seqinfo")}}
 
-\item{space.skip}{Space between chromosomes (default: 0.01)}
+\item{space.skip}{Space between chromosomes for genome-wide plot (default: 0.01)}
 }
 \value{
 list

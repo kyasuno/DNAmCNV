@@ -1,6 +1,6 @@
 #' Detect gene-level CNVs
 #'
-#' @description Detect gene-level (or any local region) CNVs. Adopted from conumee2.0
+#' @description Detect gene-level (or any local region) CNVs. Adopted from conumee2
 #' (https://github.com/hovestadtlab/conumee2.git)
 #' @param segdata list. Output of \code{run_segmentation}.
 #' @param crs list. Output of \code{tangent_normalization}. Necessary only when probe-binning was used (default: NULL).
@@ -81,7 +81,7 @@ detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99
     ranges=IRanges::IRanges(start=seg.df$start, end=seg.df$end),
     state=seg.df$state
   )
-  seqinfo(seg) <- hg38.seqinfo[paste0("chr", c(1:22,"X"))]
+  GenomeInfoDb::seqinfo(seg) <- hg38.seqinfo[paste0("chr", c(1:22,"X"))]
 
   bins <- GenomicRanges::GRanges(
     seqnames=bins.df$seqnames,
@@ -89,7 +89,7 @@ detect_gene_cnv <- function(segs, crs=NULL, genes, extend.bp=500000, conf = 0.99
     lrr.adjusted=bins.df$lrr.adjusted,
     state=bins.df$state
   )
-  seqinfo(bins) <- hg38.seqinfo[paste0("chr", c(1:22,"X"))]
+  GenomeInfoDb::seqinfo(bins) <- hg38.seqinfo[paste0("chr", c(1:22,"X"))]
 
   boots <- nullranges::bootRanges(bins, blockLength = blockLength, R = R,
                                   seg = seg, proportionLength = proportionLength)

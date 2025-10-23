@@ -9,7 +9,8 @@ smooth_segments(
   loss.lrr = -0.1,
   gain.lrr = 0.1,
   use.pcf = FALSE,
-  gamma = 40
+  gamma = 40,
+  max.dist = 0.1
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ smooth_segments(
 \item{use.pcf}{logical. Use PCF method for smoothing within each CNV status (default: FALSE).}
 
 \item{gamma}{numeric. penalty for each discontinuity in the curve (default: 40).}
+
+\item{max.dist}{numeric. the maximu difference of mean.lrr between the neighboring segments to be merged (default: 0.1).}
 }
 \value{
 list. The same list with additional tbl named smoothed.

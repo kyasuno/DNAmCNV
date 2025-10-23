@@ -13,6 +13,8 @@ merge_nearby_probes(crs, min.gapwidth, max.probes, n.cores = 1L)
 
 \item{max.probes}{integer. Maximum number of probes to be merged within a set of probes. Probes are split into nearly equally
 \code{ceiling(k/max.probes)} groups, where k is the number of probes in the group.}
+
+\item{n.cores}{integer. Number of cores to be used to run this function (default: 1).}
 }
 \value{
 tbl. seqnames, start, end, width, nProbes, chrArm and median log R ratio (lrr).
